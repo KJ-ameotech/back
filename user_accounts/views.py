@@ -263,7 +263,7 @@ class UserLogin(APIView):
                     # If account status is not active, return an error response
                     response_data = {
                         'status_code': status.HTTP_403_FORBIDDEN,
-                        'detail': 'Account under review',
+                        'detail': "You are under Admin's verification. You will be able to login after 24 Hours",
                     }
                     return Response(response_data, status=status.HTTP_403_FORBIDDEN)
             else:
