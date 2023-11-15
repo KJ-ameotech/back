@@ -1637,14 +1637,12 @@ class DocumentListCreateView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        user_id = request.GET.get('user_id')
-        if not user_id:
-            return Response({"error": "user_id query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        user_id = request.data['user']
         try:
             data = Document.objects.get(id=user_id)
             return Response({"error":"User Documents Already exist"}, status=status.HTTP_400_BAD_REQUEST)
         except:
-            request.data['user'] = user_id
+
             serializer = DocumentSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
