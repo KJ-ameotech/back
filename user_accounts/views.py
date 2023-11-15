@@ -1630,13 +1630,44 @@ class FamilyNameList(APIView):
 
 
 
-class DocumentListCreateView(generics.ListCreateAPIView):
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
+class DocumentListCreateView(APIView):
+    def get(self, request):
+        documents = Document.objects.all()
+        serializer = DocumentSerializer(documents, many=True)
+        return Response(serializer.data)
 
-class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
+    def post(self, request):
+        serializer = DocumentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DocumentDetailView(APIView):
+    def get_object(self, pk):
+        try:
+            return Document.objects.get(pk=pk)
+        except Document.DoesNotExist:
+            raise status.HTTP_404_NOT_FOUND
+
+    def get(self, request, pk):
+        document = self.get_object(pk)
+        serializer = DocumentSerializer(document)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        document = self.get_object(pk)
+        serializer = DocumentSerializer(document, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        document = self.get_object(pk)
+        document.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 
