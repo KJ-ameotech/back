@@ -68,6 +68,7 @@ class Profile(models.Model):
     about_me = models.TextField(null=True, blank=True)
     religion = models.CharField(max_length=255, null=True, blank=True)
     caste = models.CharField(max_length=255, null=True, blank=True)
+    time_of_birth = models.DateTimeField(null=True, blank=True)
     marital_status = models.CharField(max_length=20, null=True, blank=True)
     height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
