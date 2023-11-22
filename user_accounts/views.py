@@ -1452,6 +1452,10 @@ class CustomUserSearchByCustomIDView(APIView):
         except ProfilePicture.DoesNotExist:
             profile_picture_url = None
 
+        try:
+            profile = Profile.objects.get(user=current_user_id)
+        except profile.DoesNotExist:
+            profile = None
 
         current_user_location = CustomUser.objects.get(id=current_user_id)
         requesting_user_latitude = current_user_location.latitude
@@ -1476,7 +1480,7 @@ class CustomUserSearchByCustomIDView(APIView):
             else:
                 age = None
             user_data.append({
-                'user_id': user.id,
+                 'user_id': user.id,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'username': user.username,
@@ -1493,7 +1497,19 @@ class CustomUserSearchByCustomIDView(APIView):
                 'gender': user.gender,
                 'latitude': user.latitude,
                 'longitude': user.longitude,
-                # Add other profile data fields here
+                'about_me':profile.about_me,
+                'marital_status': profile.marital_status,
+                'height': profile.height,
+                'weight': profile.weight,
+                'education': profile.education,
+                'occupation': profile.occupation,
+                'family_status': profile.family_status,
+                'income': profile.income,
+                'alcoholic': profile.alcoholic,
+                'smoker': profile.smoker,
+                'hobbies': profile.hobbies,
+                'skin_tone': profile.skin_tone,
+                'time_of_bith':profile.time_of_birth
             })
 
         # Serialize the user data and return it as a Response
