@@ -35,7 +35,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'username': {'required': True, 'validators': [MinLengthValidator(4), MaxLengthValidator(150)]},
             'email': {'required': True, 'validators': [validate_email]},
             'profile_for': {'required': True},
-            'date_of_birth': {'required': True},
+           # 'date_of_birth': {'required': True},
             'religion': {'required': True},
             'community': {'required': True},
             'living_in': {'required': True},

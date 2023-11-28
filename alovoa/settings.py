@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-#(a-veg9k!_*(87thhss!y5_v+mzfzc)r33kwo@ifo3yj+&mlh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['139.84.135.154', '127.0.0.1']
+ALLOWED_HOSTS = ['15.235.193.118', '127.0.0.1']
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "https://anotherdomain.com"
@@ -117,16 +117,7 @@ DATABASES = {
 
 
 
-# DATABASES = {
-   # 'default': {
-       # 'ENGINE': 'django.db.backends.postgresql',
-      #  'NAME': 'defaultdb',
-     #   'USER': 'vultradmin',
-    #    'PASSWORD': 'AVNS_z_9-AcTTM6SvtB3kGY_',
-   #     'HOST': 'vultr-prod-9c8efaf6-2146-4144-bb03-709e3918b68c-vultr-prod-5d43.vultrdb.com',
-  #      'PORT': '16751',
- #   }
-#}
+
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
