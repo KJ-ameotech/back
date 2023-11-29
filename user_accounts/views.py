@@ -1028,7 +1028,7 @@ class CustomUserSearchAPIView(APIView):
                     'username': user_location.username,
                     'age': age,
                     'email': user_location.email,
-                    'profile_picture': profile_picture.image.url if profile_picture else None,
+                    'profile_picture': profile_picture.image.url if profile_picture and profile_picture.approved  else None,
                     'distance': distance
                     # Add other profile data fields here
                 })
@@ -1078,7 +1078,7 @@ class CustomUserSearchAPIView(APIView):
                 'username': user_location.username,
                 'age': age,
                 'email': user_location.email,
-                'profile_picture': profile_picture.image.url if profile_picture else None,
+                'profile_picture': profile_picture.image.url if profile_picture and profile_picture.approved  else None,
                 'distance': distance
                 # Add other profile data fields here
             })
@@ -1323,7 +1323,7 @@ class ProfileSearchView(APIView):
                     'username': profile.user.username,
                     'age': age,
                     'email': profile.user.email,
-                    'profile_picture': profile_picture.image.url,
+                    'profile_picture': profile_picture.image.url if profile_picture and profile_picture.approved  else None,
                     'distance': distance
                     # Add other profile data fields here
                 })
@@ -1505,13 +1505,14 @@ class CustomUserSearchByCustomIDView(APIView):
                         (today.month, today.day) < (date_of_birth.month, date_of_birth.day))
             else:
                 age = None
+
             user_data.append({
                  'user_id': user.id,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'username': user.username,
                 'email': user.email,
-                'profile_picture': profile_picture_url,
+                'profile_picture': profile_picture.image.url if profile_picture.approved else None,
                 'age': age,
                 'distance': distance,
                 'profile_for': user.profile_for,
