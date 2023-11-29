@@ -1472,7 +1472,8 @@ class CustomUserSearchByCustomIDView(APIView):
 
         # Assuming you have only one ProfilePicture for the current user
         try:
-            profile_picture = ProfilePicture.objects.get(user=current_user_id)
+            userId = CustomUser.objects.get(custom_id=custom_id)
+            profile_picture = ProfilePicture.objects.get(user=userId.id)
             profile_picture_url = profile_picture.image.url
         except ProfilePicture.DoesNotExist:
             profile_picture_url = None
