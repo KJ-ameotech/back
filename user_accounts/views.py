@@ -284,7 +284,7 @@ class UserLogin(APIView):
                         'access_token': str(refresh.access_token),
                         'refresh_token': str(refresh),
                         'user_id': user_id,
-                        'username': usernames
+                        'username': username
                     }
                     return Response(response_data, status=status.HTTP_200_OK)
                 else:
