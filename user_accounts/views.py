@@ -200,6 +200,7 @@ class UserLogin(APIView):
             try:
                 userdata = CustomUser.objects.get(email=email)
                 user_id = userdata.id
+                username = userdata.username
             except:
                 response_data = {
                     'status_code': status.HTTP_404_NOT_FOUND,
@@ -225,7 +226,8 @@ class UserLogin(APIView):
                                 'status_code': status.HTTP_200_OK,
                                 'access_token': str(refresh.access_token),
                                 'refresh_token': str(refresh),
-                                'user_id': user_id
+                                'user_id': user_id,
+                                'username': username
                             }
                             return Response(response_data, status=status.HTTP_200_OK)
                         else:
@@ -281,7 +283,8 @@ class UserLogin(APIView):
                         'status_code': status.HTTP_200_OK,
                         'access_token': str(refresh.access_token),
                         'refresh_token': str(refresh),
-                        'user_id': user_id
+                        'user_id': user_id,
+                        'username': usernames
                     }
                     return Response(response_data, status=status.HTTP_200_OK)
                 else:
