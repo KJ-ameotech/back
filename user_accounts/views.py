@@ -926,18 +926,18 @@ class CustomUserSearchAPIView(APIView):
                 currentYear = date.today().year
                 age_from_year = int(age_from)
                 age_to_year = int(age_to)
-                age_from_date = date(currentYear - age_to_year, 1, 1)
-                age_to_date = date(currentYear - age_from_year, 12, 31)
+                # Calculate birth years based on provided ages
+                age_from_date = date(currentYear - age_from_year, 1, 1)
+                age_to_date = date(currentYear - age_to_year - 1, 12, 31)
                 custom_user_queryset = custom_user_queryset.filter(date_of_birth__range=(age_from_date, age_to_date))
             except ValueError:
                 return Response({'detail': 'Invalid year format. Year must be an integer.'},
                                 status=status.HTTP_400_BAD_REQUEST)
-
         if gender:
             custom_user_queryset = custom_user_queryset.filter(gender=gender)
 
         if religion:
-            custom_user_queryset = custom_user_queryset.filter(religion=religion)
+            custom_user_queryset = custom_user_queryset.filter(community=religion)
         custom_user_serializer = CustomUserSerializer(custom_user_queryset, many=True)
         custom_user_serialized_data = custom_user_serializer.data
 
