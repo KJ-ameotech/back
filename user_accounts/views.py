@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login
+from rest_framework.exceptions import PermissionDenied
 from rest_framework import status, viewsets, permissions
 from rest_framework import generics
 from rest_framework.response import Response
@@ -874,70 +875,63 @@ from django.utils import timezone
 from django.db.models import Q
 
 
+
 class CustomUserSearchAPIView(APIView):
     def get(self, request):
         current_user_id = self.request.query_params.get('user_id')
 
         if current_user_id is None:
             return Response({'detail': 'user_id query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # CustomUser search parameters
         age_from = self.request.query_params.get('age_from')
         age_to = self.request.query_params.get('age_to')
         gender = self.request.query_params.get('gender')
-        religion = self.request.query_params.get('religion')
+        community = self.request.query_params.get('community')
 
-        current_user = CustomUser.objects.get(id=current_user_id)
-        current_user_family_name = current_user.family_name
+        user_id_excluded = []
 
-        # Query for user IDs with the same family name
-        users_with_same_family_name = CustomUser.objects.filter(family_name=current_user_family_name).exclude(
-            id=current_user_id)
-
-        # Extract the IDs of users with the same family name
-        user_id_excluded = [user.id for user in users_with_same_family_name]
-
-        # Add the current user to the excluded list
         user_id_excluded.append(current_user_id)
 
-
         user_profiles = UserLike.objects.filter((Q(liked_user_id=current_user_id) | Q(user=current_user_id)))
-
 
         for data in user_profiles:
             if data.user.id != int(current_user_id):
                 user_id_excluded.append(data.user.id)
             else:
                 user_id_excluded.append(data.liked_user.id)
-        
+
         print(user_id_excluded)
 
-
-        # disliked_users = UserLike.objects.filter((Q(is_disliked=True) & Q(liked_user_id=current_user_id)))       
-        # disliked_user_ids = set([disliked.liked_user_id for disliked in disliked_users]) 
+        # disliked_users = UserLike.objects.filter((Q(is_disliked=True) & Q(liked_user_id=current_user_id)))
+        # disliked_user_ids = set([disliked.liked_user_id for disliked in disliked_users])
         # liked_users = UserLike.objects.filter(user=current_user_id)
         # liked_user_ids = set([liked.liked_user_id for liked in liked_users])
 
         # CustomUser search
         # custom_user_queryset = CustomUser.objects.exclude(id=current_user_id).exclude(id__in=liked_user_ids).exclude(id__in=disliked_user_ids)
         custom_user_queryset = CustomUser.objects.exclude(id__in=user_id_excluded)
-        if age_from is not None and age_to is not None:
-            try:
-                currentYear = date.today().year
-                age_from_year = int(age_from)
-                age_to_year = int(age_to)
-                age_from_date = date(currentYear - age_to_year, 1, 1)
-                age_to_date = date(currentYear - age_from_year, 12, 31)
-                custom_user_queryset = custom_user_queryset.filter(date_of_birth__range=(age_from_date, age_to_date))
-            except ValueError:
-                return Response({'detail': 'Invalid year format. Year must be an integer.'},
-                                status=status.HTTP_400_BAD_REQUEST)
+        # if age_from is not None and age_to is not None:
+        #     try:
+        #         currentYear = date.today().year
+        #         age_from_year = int(age_from)
+        #         age_to_year = int(age_to)
+        #         age_from_date = date(currentYear - age_to_year, 1, 1)
+        #         age_to_date = date(currentYear - age_from_year, 12, 31)
+        #         custom_user_queryset = custom_user_queryset.filter(date_of_birth__range=(age_from_date, age_to_date))
+        #         print(custom_user_queryset)
+        #     except ValueError:
+        #         return Response({'detail': 'Invalid year format. Year must be an integer.'},
+        #                         status=status.HTTP_400_BAD_REQUEST)
 
         if gender:
             custom_user_queryset = custom_user_queryset.filter(gender=gender)
+            print(custom_user_queryset)
 
-        if religion:
-            custom_user_queryset = custom_user_queryset.filter(community=religion)
+        if community:
+            custom_user_queryset = custom_user_queryset.filter(community=community)
+            print(custom_user_queryset)
+
         custom_user_serializer = CustomUserSerializer(custom_user_queryset, many=True)
         custom_user_serialized_data = custom_user_serializer.data
 
@@ -945,7 +939,8 @@ class CustomUserSearchAPIView(APIView):
 
         # Check if there are any query parameters for the Profile model
         profile_query_params_exist = any(
-            param in request.GET for param in ['startheight', 'endheight', 'education', 'marital_status', 'minweight', 'maxweight', 'minincome', 'maxincome', 'skin_tone']
+            param in request.GET for param in
+            ['startheight', 'endheight', 'education', 'marital_status', 'minweight', 'maxweight', 'minincome', 'maxincome','skin_tone']
         )
 
         if profile_query_params_exist:
@@ -967,6 +962,7 @@ class CustomUserSearchAPIView(APIView):
 
             if education is not None:
                 profile_queryset = profile_queryset.filter(education=education)
+
 
             if marital_status is not None:
                 profile_queryset = profile_queryset.filter(marital_status=marital_status)
@@ -992,10 +988,10 @@ class CustomUserSearchAPIView(APIView):
             requesting_user_latitude = latitude.latitude
             requesting_user_longitude = latitude.longitude
 
-
             for profile in profile_serialized_data:
                 user = profile['user']
-
+                dob = profile['time_of_birth']
+                print(dob,"===================")
 
                 try:
                     profile_picture = ProfilePicture.objects.get(user=user)
@@ -1025,13 +1021,13 @@ class CustomUserSearchAPIView(APIView):
 
                 combined_profile_data.append({
                     'user_id': user_location.id,
-                    'custom_id': user_location.custom_id,
+                    'custom_id':user_location.custom_id,
                     'first_name': user_location.first_name,
                     'last_name': user_location.last_name,
                     'username': user_location.username,
-                    'age': age,
+                    'age': dob,
                     'email': user_location.email,
-                    'profile_picture': profile_picture.image.url if profile_picture and profile_picture.approved  else None,
+                    'profile_picture': profile_picture.image.url if profile_picture else None,
                     'distance': distance
                     # Add other profile data fields here
                 })
@@ -1039,7 +1035,6 @@ class CustomUserSearchAPIView(APIView):
             return Response(combined_profile_data, status=status.HTTP_200_OK)
         for users in custom_user_serialized_data:
             user = users['id']
-
 
             try:
                 profile_picture = ProfilePicture.objects.get(user=user)
@@ -1052,10 +1047,8 @@ class CustomUserSearchAPIView(APIView):
             user_longitude = user_location.longitude
 
             current_user_data = CustomUser.objects.filter(id=current_user_id).first()
-            current_user_latitude= current_user_data.latitude
+            current_user_latitude = current_user_data.latitude
             current_user_longitude = current_user_data.longitude
-
-
 
             # # Calculate the distance using geopy.distance
             distance = round(geodesic((current_user_latitude, current_user_longitude),
@@ -1075,19 +1068,16 @@ class CustomUserSearchAPIView(APIView):
 
             basic_user_data.append({
                 'user_id': user_location.id,
-                'custom_id': user_location.custom_id,
                 'first_name': user_location.first_name,
                 'last_name': user_location.last_name,
                 'username': user_location.username,
                 'age': age,
                 'email': user_location.email,
-                'profile_picture': profile_picture.image.url if profile_picture and profile_picture.approved  else None,
+                'profile_picture': profile_picture.image.url if profile_picture else None,
                 'distance': distance
                 # Add other profile data fields here
             })
         return Response(basic_user_data, status=status.HTTP_200_OK)
-
-
 
 class UserLikeAPIView(APIView):
     serializer_class = UserLikeSerializer  # Replace with your actual serializer
@@ -1470,6 +1460,16 @@ class CustomUserSearchByCustomIDView(APIView):
         if not custom_id:
             return Response({'detail': 'custom_id query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            current_user = CustomUser.objects.get(id=current_user_id)
+            print('current_user.gender', current_user.gender)
+            custom_user = CustomUser.objects.get(custom_id=custom_id)
+            print('ustom_user.gender', custom_user.gender)
+        except CustomUser.DoesNotExist:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if current_user.gender == custom_user.gender:
+            raise PermissionDenied("You are not authorized to view this user's data.")
         # Search for users by custom ID
         custom_user_queryset = CustomUser.objects.filter(custom_id=custom_id)
 
@@ -1541,12 +1541,9 @@ class CustomUserSearchByCustomIDView(APIView):
                 'skin_tone': profile.skin_tone,
                 'time_of_bith':profile.time_of_birth
             })
-
         # Serialize the user data and return it as a Response
         serialized_data = CustomUserSerializer(user_data, many=True)
         return Response(user_data, status=status.HTTP_200_OK)
-
-
 
 class CreateSubscriptionList(APIView):
     def get(self, request):
