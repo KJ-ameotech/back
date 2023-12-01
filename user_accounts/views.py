@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from django.http import JsonResponse
 import numpy as np
+from datetime import datetime
 from django.http import Http404
 from rest_framework import serializers
 from rest_framework.decorators import action
@@ -15,7 +16,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView
 from .models import *
 from .serializers import *
-
+import datetime
+from  datetime import date
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -911,6 +913,7 @@ class CustomUserSearchAPIView(APIView):
         # CustomUser search
         # custom_user_queryset = CustomUser.objects.exclude(id=current_user_id).exclude(id__in=liked_user_ids).exclude(id__in=disliked_user_ids)
         custom_user_queryset = CustomUser.objects.exclude(id__in=user_id_excluded)
+        profileuser = Profile.objects.exclude(user__in=user_id_excluded)
         # if age_from is not None and age_to is not None:
         #     try:
         #         currentYear = date.today().year
@@ -918,8 +921,8 @@ class CustomUserSearchAPIView(APIView):
         #         age_to_year = int(age_to)
         #         age_from_date = date(currentYear - age_to_year, 1, 1)
         #         age_to_date = date(currentYear - age_from_year, 12, 31)
-        #         custom_user_queryset = custom_user_queryset.filter(date_of_birth__range=(age_from_date, age_to_date))
-        #         print(custom_user_queryset)
+        #         custom_user_queryset = profileuser.filter(time_of_birth__date__range=(age_from_date, age_to_date))
+        #         print(custom_user_queryset, "=============================")
         #     except ValueError:
         #         return Response({'detail': 'Invalid year format. Year must be an integer.'},
         #                         status=status.HTTP_400_BAD_REQUEST)
@@ -990,8 +993,13 @@ class CustomUserSearchAPIView(APIView):
 
             for profile in profile_serialized_data:
                 user = profile['user']
-                dob = profile['time_of_birth']
-                print(dob,"===================")
+                try:
+                    dob = Profile.objects.get(user=user)
+                    dob = dob.time_of_birth.date()
+                    current_date = date.today()
+                    age = current_date.year - dob.year - ((current_date.month, current_date.day) < (dob.month, dob.day))
+                except:
+                    age = None
 
                 try:
                     profile_picture = ProfilePicture.objects.get(user=user)
@@ -1013,11 +1021,6 @@ class CustomUserSearchAPIView(APIView):
                 today = date.today()
                 date_of_birth = user_location.date_of_birth
 
-                if date_of_birth:
-                    age = today.year - date_of_birth.year - (
-                            (today.month, today.day) < (date_of_birth.month, date_of_birth.day))
-                else:
-                    age = None
 
                 combined_profile_data.append({
                     'user_id': user_location.id,
@@ -1025,7 +1028,7 @@ class CustomUserSearchAPIView(APIView):
                     'first_name': user_location.first_name,
                     'last_name': user_location.last_name,
                     'username': user_location.username,
-                    'age': dob,
+                    'age': age,
                     'email': user_location.email,
                     'profile_picture': profile_picture.image.url if profile_picture else None,
                     'distance': distance
@@ -1035,8 +1038,13 @@ class CustomUserSearchAPIView(APIView):
             return Response(combined_profile_data, status=status.HTTP_200_OK)
         for users in custom_user_serialized_data:
             user = users['id']
-            dob = Profile.objects.get(user=user)
-            dob =  dob.time_of_birth
+            try:
+                dob = Profile.objects.get(user=user)
+                dob =  dob.time_of_birth.date()
+                current_date = date.today()
+                age = current_date.year - dob.year - ((current_date.month, current_date.day) < (dob.month, dob.day))
+            except:
+                age = None
             try:
                 profile_picture = ProfilePicture.objects.get(user=user)
             except ProfilePicture.DoesNotExist:
@@ -1061,11 +1069,6 @@ class CustomUserSearchAPIView(APIView):
             today = date.today()
             date_of_birth = user_location.date_of_birth
 
-            if date_of_birth:
-                age = today.year - date_of_birth.year - (
-                        (today.month, today.day) < (date_of_birth.month, date_of_birth.day))
-            else:
-                age = None
 
             basic_user_data.append({
                 'user_id': user_location.id,
@@ -1073,7 +1076,7 @@ class CustomUserSearchAPIView(APIView):
                 'custom_id': user_location.custom_id,
                 'last_name': user_location.last_name,
                 'username': user_location.username,
-                'age': dob,
+                'age': age,
                 'email': user_location.email,
                 'profile_picture': profile_picture.image.url if profile_picture else None,
                 'distance': distance
