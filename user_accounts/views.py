@@ -1476,7 +1476,7 @@ class CustomUserSearchByCustomIDView(APIView):
             return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         if current_user.gender == custom_user.gender:
-            raise PermissionDenied("You are not authorized to view this user's data.")
+            raise PermissionDenied("You are not authorized to view data haveing same gender as you.")
         # Search for users by custom ID
         custom_user_queryset = CustomUser.objects.filter(custom_id=custom_id)
 
