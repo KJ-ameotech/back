@@ -929,7 +929,7 @@ class CustomUserSearchAPIView(APIView):
             print(custom_user_queryset)
 
         if community:
-            custom_user_queryset = custom_user_queryset.filter(community=community)
+            custom_user_queryset = custom_user_queryset.filter(family_name=community)
             print(custom_user_queryset)
 
         custom_user_serializer = CustomUserSerializer(custom_user_queryset, many=True)
@@ -1035,7 +1035,8 @@ class CustomUserSearchAPIView(APIView):
             return Response(combined_profile_data, status=status.HTTP_200_OK)
         for users in custom_user_serialized_data:
             user = users['id']
-
+            dob = Profile.objects.get(user=user)
+            dob =  dob.time_of_birth
             try:
                 profile_picture = ProfilePicture.objects.get(user=user)
             except ProfilePicture.DoesNotExist:
@@ -1069,9 +1070,10 @@ class CustomUserSearchAPIView(APIView):
             basic_user_data.append({
                 'user_id': user_location.id,
                 'first_name': user_location.first_name,
+                'custom_id': user_location.custom_id,
                 'last_name': user_location.last_name,
                 'username': user_location.username,
-                'age': age,
+                'age': dob,
                 'email': user_location.email,
                 'profile_picture': profile_picture.image.url if profile_picture else None,
                 'distance': distance
@@ -1482,7 +1484,7 @@ class CustomUserSearchByCustomIDView(APIView):
             profile_picture_url = None
 
         try:
-            profile = Profile.objects.get(user=current_user_id)
+            profile = Profile.objects.get(user=userId.id)
         except profile.DoesNotExist:
             profile = None
 
