@@ -29,7 +29,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ("id",
         'first_name','last_name', 'username', 'email', 'password', 'confirm_password', 'profile_for', 'date_of_birth', 'religion', 'community',
-        'living_in', 'mobile_number','gender', 'family_name')
+        'living_in', 'mobile_number','gender', 'family_name','custom_id')
 
         extra_kwargs = {
             'username': {'required': True, 'validators': [MinLengthValidator(4), MaxLengthValidator(150)]},
