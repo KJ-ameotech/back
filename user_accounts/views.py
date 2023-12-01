@@ -1210,8 +1210,8 @@ class LikedUserLikeListViewRequestsAccepted(APIView):
         user_data = CustomUser.objects.filter(id__in=user_ids)
 
         user_data = CustomUserSerializer(user_data, many=True).data
-        for index, user in enumerate(user_data):
-            serialized_data[index]['custom_id'] = user.custom_id
+        # for index, user in enumerate(user_data):
+        #     serialized_data[index]['custom_id'] = user.custom_id
 
         profile_images = ProfilePicture.objects.filter(user__id__in=user_ids)
         profile_images_data = ProfilePictureSerializer(profile_images, many=True).data
