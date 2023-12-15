@@ -912,7 +912,7 @@ class CustomUserSearchAPIView(APIView):
 
         # CustomUser search
         # custom_user_queryset = CustomUser.objects.exclude(id=current_user_id).exclude(id__in=liked_user_ids).exclude(id__in=disliked_user_ids)
-        custom_user_queryset = CustomUser.objects.exclude(id__in=user_id_excluded)
+        custom_user_queryset = CustomUser.objects.filter(is_staff=False).exclude(id__in=user_id_excluded)
         profileuser = Profile.objects.exclude(user__in=user_id_excluded)
         # if age_from is not None and age_to is not None:
         #     try:
