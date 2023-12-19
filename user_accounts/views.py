@@ -912,7 +912,8 @@ class CustomUserSearchAPIView(APIView):
 
         # CustomUser search
         # custom_user_queryset = CustomUser.objects.exclude(id=current_user_id).exclude(id__in=liked_user_ids).exclude(id__in=disliked_user_ids)
-        custom_user_queryset = CustomUser.objects.filter(is_staff=False).exclude(id__in=user_id_excluded)
+        current_user = CustomUser.objects.filter(id=current_user_id).first()
+        custom_user_queryset = CustomUser.objects.filter(Q(is_staff=False) & ~Q(family_name=current_user.family_name)).exclude(id__in=user_id_excluded)
         profileuser = Profile.objects.exclude(user__in=user_id_excluded)
         # if age_from is not None and age_to is not None:
         #     try:
@@ -929,11 +930,9 @@ class CustomUserSearchAPIView(APIView):
 
         if gender:
             custom_user_queryset = custom_user_queryset.filter(gender=gender)
-            print(custom_user_queryset)
 
         if community:
             custom_user_queryset = custom_user_queryset.filter(family_name=community)
-            print(custom_user_queryset)
 
         custom_user_serializer = CustomUserSerializer(custom_user_queryset, many=True)
         custom_user_serialized_data = custom_user_serializer.data
@@ -961,7 +960,6 @@ class CustomUserSearchAPIView(APIView):
             # Additional filtering of Profile using results from CustomUser
             profile_queryset = Profile.objects.filter(user__in=custom_user_queryset)
 
-            print(profile_queryset)
 
             if education is not None:
                 profile_queryset = profile_queryset.filter(education=education)
